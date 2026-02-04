@@ -3,8 +3,16 @@ import joblib
 
 app = Flask(__name__)
 
-model = joblib.load("linear_svm_model.pkl")
-vectorizer = joblib.load("tfidf_vectorizer.pkl")
+
+vectorizer = None
+model = None
+
+def load_model():
+    global vectorizer, model
+    if vectorizer is None or model is None:
+        vectorizer = joblib.load("tfidf_vectorizer.pkl")
+        model = joblib.load("linear_svm_model.pkl")
+
 
 @app.route("/")
 def home():
@@ -12,6 +20,7 @@ def home():
 
 @app.route("/predict", methods=["POST"])
 def predict():
+    load_model()
     data = request.get_json()
     text = data["review"]
 
