@@ -1,29 +1,23 @@
+import os
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+
 from flask import Flask, request, jsonify, render_template
 import joblib
 
 app = Flask(__name__)
 
+# ✅ LOAD ONCE
+vectorizer = joblib.load("tfidf_vectorizer.pkl")
+model = joblib.load("linear_svm_model.pkl")
 
-vectorizer = None
-model = None
-
-def load_model():
-    global vectorizer, model
-    if vectorizer is None or model is None:
-        vectorizer = joblib.load("tfidf_vectorizer.pkl")
-        model = joblib.load("linear_svm_model.pkl")
-
-@app.before_first_request
-def warmup_model():
-    load_model()
-    
 @app.route("/")
 def home():
     return render_template("index.html")
 
 @app.route("/predict", methods=["POST"])
 def predict():
-    load_model()
     data = request.get_json()
     text = data["review"]
 
@@ -37,12 +31,6 @@ def predict():
         "prediction": int(pred)
     })
 
-'''if __name__ == "__main__":
-    app.run(debug=True)'''
-import os
-
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
-
-
