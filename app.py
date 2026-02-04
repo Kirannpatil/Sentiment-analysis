@@ -13,7 +13,10 @@ def load_model():
         vectorizer = joblib.load("tfidf_vectorizer.pkl")
         model = joblib.load("linear_svm_model.pkl")
 
-
+@app.before_first_request
+def warmup_model():
+    load_model()
+    
 @app.route("/")
 def home():
     return render_template("index.html")
